@@ -1,0 +1,16 @@
+#!/usr/bin/env python3
+import argparse
+import base64
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--txt_path', required=True)
+parser.add_argument('--output_path', required=True)
+args = parser.parse_args()
+
+# Read and decode
+with open(args.txt_path, 'r') as f:
+    decoded = base64.b64decode(f.read())
+
+# Write image
+with open(args.output_path, 'wb') as f:
+    f.write(decoded)

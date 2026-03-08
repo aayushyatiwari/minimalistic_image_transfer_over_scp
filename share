@@ -1,0 +1,29 @@
+#!/usr/bin/env python3
+import argparse
+import base64
+import subprocess
+import os
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--image_path', required=True)
+parser.add_argument('--scpIP', required=True)
+parser.add_argument('--scpPassword', required=True)
+args = parser.parse_args()
+
+# Read and encode image
+with open(args.image_path, 'rb') as f:
+    encoded = base64.b64encode(f.read()).decode()
+
+# Write to temp file
+temp_file = '/tmp/image_transfer.txt'
+with open(temp_file, 'w') as f:
+    f.write(encoded)
+try:
+    subprocess.run(['sshpass', '-p', args.scpPassword, 'scp', temp_file, f'{args.scpIP}:~/'], check=True)
+    subprocess.run(['sshpass', '-p', args.scpPassword, 'ssh', args.scpIP, 'cat ~/image_transfer.txt | base64 -d > ~/decoded_image'], check=True)
+    print("Image transferred and decoded on remote machine as ~/decoded_image")
+
+except subprocess.CalledProcessError:
+    print("couldn't reach the ip")
+finally:
+    os.remove(temp_file)
